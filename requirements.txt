@@ -1,0 +1,6 @@
+fastapi
+uvicorn
+SQLModel
+psycopg2-binary
+pydantic
+bcrypt
