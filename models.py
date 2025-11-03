@@ -1,38 +1,40 @@
-from sqlalchemy import Column, Integer, String, Date, Boolean, ForeignKey
-from sqlalchemy.orm import relationship
-from db import Base
+from sqlmodel import SQLModel, Field, Relationship
+from typing import Optional, Annotated, List
+from datetime import date
 
-class User(Base):
+
+class User(SQLModel, table=True):
     __tablename__ = "users"
-    
-    id = Column(Integer, primary_key=True, index=True)
-    email = Column(String, unique=True, index=True, nullable=False)
-    hashed_password = Column(String, nullable=False)
-    is_active = Column(Boolean, default=True)
-    
-    books = relationship("Book", back_populates="owner")
 
-class Book(Base):
+    id: Optional[int] = Field(default=None, primary_key=True)
+    email: str = Field(unique=True, index=True)
+    hashed_password: str = Field()
+    is_active: bool = Field(default=True)
+
+    books: List["Book"] = Relationship(back_populates="owner")
+
+
+class Book(SQLModel, table=True):
     __tablename__ = "books"
-    
-    id = Column(Integer, primary_key=True, index=True)
-    isbn = Column(String, unique=True, index=True)
-    title = Column(String, index=True, nullable=False)
-    author = Column(String, index=True, nullable=False)
-    publisher = Column(String, index=True, nullable=False)
-    publication_date = Column(Date, index=True, nullable=False)
-    print_length = Column(Integer, index=True, nullable=False)
-    language = Column(String, index=True, nullable=False)
-    front_cover_url = Column(String, index=True, nullable=False)
-    back_cover_url = Column(String, index=True, nullable=False)
-    owner_id = Column(Integer, ForeignKey("users.id"))
-    
-    # Optional fields
-    subtitle = Column(String, index=True, nullable=True)
-    co_author = Column(String, index=True, nullable=True)
-    synopsis = Column(String, index=True, nullable=True)
-    copyright_info = Column(String, index=True, nullable=True)
-    category = Column(String, index=True, nullable=True)
-    subcategory = Column(String, index=True, nullable=True)
-    
-    owner = relationship("User", back_populates="books")
+
+    id: Optional[int] = Field(default=None, primary_key=True)
+    isbn: Optional[str] = Field(default=None, unique=True, index=True)
+    title: str = Field(index=True)
+    author: str = Field(index=True)
+    publisher: str = Field(index=True)
+    publication_date: date = Field(index=True)
+    print_length: int = Field(index=True)
+    language: str = Field(index=True)
+    front_cover_url: str = Field(index=True)
+    back_cover_url: str = Field(index=True)
+    owner_id: Optional[int] = Field(default=None, foreign_key="users.id")
+
+    # Optional fields from BookCreate schema
+    subtitle: Optional[str] = Field(default=None)
+    co_author: Optional[str] = Field(default=None)
+    synopsis: Optional[str] = Field(default=None)
+    copyright_info: Optional[str] = Field(default=None)
+    category: Optional[str] = Field(default=None)
+    subcategory: Optional[str] = Field(default=None)
+
+    owner: Optional["User"] = Relationship(back_populates="books")

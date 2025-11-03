@@ -1,21 +1,22 @@
-from sqlalchemy import create_engine
-from sqlalchemy.orm import sessionmaker, declarative_base
+import os
+from dotenv import load_dotenv
+
+from sqlmodel import create_engine, SQLModel, Session
+
+from functools import lru_cache
+
+load_dotenv()
 
 
-SQLACHEMY_DATABASE_URL = "postgresql://book_user:Marvels101939@localhost:5432/NACN-DB"
+@lru_cache(maxsize=1) # Cache the engine to avoid recreating it multiple times
+def get_engine():
+    return create_engine(os.getenv("SQLALCHEMY_DATABASE_URL"), pool_pre_ping=True)
 
-engine = create_engine(SQLACHEMY_DATABASE_URL, pool_pre_ping=True)
-# engine = create_engine(SQLACHEMY_DATABASE_URL, connect_args={"check_same_thread": False})
 
-SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
-Base = declarative_base()
+def get_db_session():
+    with Session(get_engine()) as session:
+        yield session
 
-def get_db():
-    db = SessionLocal()
-    try:
-        yield db
-    finally:
-        db.close()
 
 def create_tables():
-    Base.metadata.create_all(bind=engine)
+    SQLModel.metadata.create_all(get_engine())
